@@ -311,8 +311,6 @@ export default function FourLeafCloverGame() {
 .clover-ui .stats{
   display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:12px;
 }
-@media (max-width:1024px){ .clover-ui .stats{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
-@media (max-width:640px){ .clover-ui .stats{ grid-template-columns:repeat(2,minmax(0,1fr)); } .clover-ui .hide-sm{ display:none; } }
 .clover-ui .card{
   background:#fff; border:1px solid #e2e8f0; border-radius:16px;
   box-shadow:0 2px 10px rgba(2,6,23,.06); padding:14px 16px;
