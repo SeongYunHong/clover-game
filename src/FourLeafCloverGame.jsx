@@ -136,6 +136,7 @@ export default function FourLeafCloverGame() {
   const [anchor, setAnchor] = useState(null);
 
   const wrapRef = useRef(null);
+  const containerRef = useRef(null);
   const [boardH, setBoardH] = useState(360); // 최소 가드
 
   useEffect(() => {
@@ -241,8 +242,8 @@ export default function FourLeafCloverGame() {
   }
 
   return (
-    <div ref={containerRef} className="min-h-dvh w-full flex items-start justify-center bg-gradient-to-b from-white to-emerald-50 overflow-hidden">
-      <div className="w-full max-w-[120rem] mx-auto flex flex-col gap-2 sm:gap-3 flex-1 min-h-0 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6">
+    <div className="min-h-dvh w-full flex items-start justify-center bg-gradient-to-b from-white to-emerald-50 overflow-hidden">
+      <div ref={containerRef} className="w-full max-w-[120rem] mx-auto flex flex-col gap-3 flex-1 min-h-0 px-3 sm:px-4 md:px-6 py-3 sm:pt-4 md:pt-6">
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100/70 bg-white/85 backdrop-saturate-[1.3] backdrop-blur-md shadow p-3 sm:p-4">
           <h1 className="m-0 flex items-center gap-2 text-emerald-900 font-extrabold text-base sm:text-xl tracking-tight">🍀 네잎클로버 찾기</h1>
