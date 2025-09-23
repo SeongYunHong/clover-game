@@ -135,6 +135,9 @@ export default function FourLeafCloverGame() {
   const [boardRef, rect] = useMeasure();
   const [anchor, setAnchor] = useState(null);
 
+  const wrapRef = useRef(null);
+  const [boardH, setBoardH] = useState(360); // 최소 가드
+
   useEffect(() => {
     function updateAnchor() {
       if (!boardRef.current) return;
@@ -192,6 +195,29 @@ export default function FourLeafCloverGame() {
     if (status === "idle" && rect.width > 0 && rect.height > 0) start();
   }, [rect.width, rect.height]);
 
+  useEffect(() => {
+    function fitBoard() {
+      if (!wrapRef.current) return;
+      const top = wrapRef.current.getBoundingClientRect().top; // 보드 시작 y
+      const vh = window.visualViewport?.height ?? window.innerHeight;
+      let bottomPadding = 0; // 바깥 래퍼 pb가 있다면 그 값으로 설정
+      if (containerRef.current) {
+        const cs = getComputedStyle(containerRef.current);
+        bottomPadding = parseFloat(cs.paddingBottom) || 0;
+      }
+      const epsilon = 1 / (window.devicePixelRatio || 1);
+      const h = Math.max(320, vh - top - bottomPadding - epsilon);
+      setBoardH(h);
+    }
+    fitBoard();
+    window.addEventListener("resize", fitBoard, { passive: true });
+    window.visualViewport?.addEventListener("resize", fitBoard);
+    return () => {
+      window.removeEventListener("resize", fitBoard);
+      window.visualViewport?.removeEventListener("resize", fitBoard);
+    };
+  }, []);
+
   function start() {
     setStatus("playing");
     setStartAt(Date.now());
@@ -215,8 +241,8 @@ export default function FourLeafCloverGame() {
   }
 
   return (
-    <div className="h-screen w-full flex items-start justify-center px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 pb-0 bg-gradient-to-b from-white to-emerald-50 overflow-hidden">
-      <div className="w-full max-w-[120rem] mx-auto space-y-3 sm:space-y-4">
+    <div ref={containerRef} className="min-h-dvh w-full flex items-start justify-center bg-gradient-to-b from-white to-emerald-50 overflow-hidden">
+      <div className="w-full max-w-[120rem] mx-auto flex flex-col gap-2 sm:gap-3 flex-1 min-h-0 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6">
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100/70 bg-white/85 backdrop-saturate-[1.3] backdrop-blur-md shadow p-3 sm:p-4">
           <h1 className="m-0 flex items-center gap-2 text-emerald-900 font-extrabold text-base sm:text-xl tracking-tight">🍀 네잎클로버 찾기</h1>
@@ -262,42 +288,43 @@ export default function FourLeafCloverGame() {
         </div>
 
         {/* Board */}
-        <div
-          ref={boardRef}
-          role="application"
-          aria-label="네잎클로버 보드"
-          className="relative w-full overflow-hidden select-none border border-emerald-900/40 shadow-[inset_0_2px_10px_rgba(0,0,0,0.35),0_8px_16px_rgba(0,0,0,0.12)] aspect-[5/6] sm:aspect-[3/2] md:aspect-[16/9] xl:aspect-[21/9]"
-          style={{ backgroundImage: `url(${grassUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}
-        >
+        <div ref={wrapRef} className="w-full">
           <div
-            key={shakeKey}
-            className="absolute inset-0 motion-safe:animate-[clover-shake_160ms_ease-in-out]"
-            aria-hidden
-          />
+            ref={boardRef}
+            role="application"
+            aria-label="네잎클로버 보드"
+            className="relative w-full h-full min-h-[320px] overflow-hidden select-none border border-emerald-900/40 shadow-[inset_0_2px_10px_rgba(0,0,0,0.35),_0_8px_16px_rgba(0,0,0,0.12)]"
+            style={{ backgroundImage: `url(${grassUrl})`, backgroundSize: "cover", backgroundPosition: "center", height: boardH }}
+          >
+            <div
+              key={shakeKey}
+              className="absolute inset-0 motion-safe:animate-[clover-shake_160ms_ease-in-out]"
+              aria-hidden
+            />
 
-          {items.map((it) => (
-            <div key={it.id} className="absolute" style={{ left: it.x, top: it.y }}>
-              <LightHalo w={it.size} />
-              <GroundShadow w={it.size} />
-              <button
-                onClick={() => clickClover(it)}
-                className="group relative outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 rounded-xl active:scale-95 bg-transparent border-0 p-0 appearance-none cursor-pointer touch-manipulation"
-                aria-label={it.isFour ? "네잎 클로버" : "세잎 클로버"}
-              >
-                <img
-                  src={it.isFour ? fourUrl : threeUrl}
-                  alt="clover"
-                  width={it.size}
-                  height={it.size}
-                  className="pointer-events-none select-none transform transition-transform duration-150 will-change-transform group-hover:scale-110 group-hover:-rotate-2"
-                  style={{ filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.35))", imageRendering: "auto" }}
-                />
-                <span className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-emerald-300/0 group-hover:ring-emerald-300/70 transition" />
-              </button>
-            </div>
-          ))}
+            {items.map((it) => (
+              <div key={it.id} className="absolute" style={{ left: it.x, top: it.y }}>
+                <LightHalo w={it.size} />
+                <GroundShadow w={it.size} />
+                <button
+                  onClick={() => clickClover(it)}
+                  className="group relative outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 rounded-xl active:scale-95 bg-transparent border-0 p-0 appearance-none cursor-pointer touch-manipulation"
+                  aria-label={it.isFour ? "네잎 클로버" : "세잎 클로버"}
+                >
+                  <img
+                    src={it.isFour ? fourUrl : threeUrl}
+                    alt="clover"
+                    width={it.size}
+                    height={it.size}
+                    className="pointer-events-none select-none transform transition-transform duration-150 will-change-transform group-hover:scale-110 group-hover:-rotate-2"
+                    style={{ filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.35))", imageRendering: "auto" }}
+                  />
+                  <span className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-emerald-300/0 group-hover:ring-emerald-300/70 transition" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-
         {/* Success Modal (board center) */}
         <ModalAt open={status === "success"} anchor={anchor}>
           <div id="clover-modal-card" className="relative isolate opacity-100" style={{ width: "min(92vw, 380px)", padding: 20, textAlign: "center" }}>
