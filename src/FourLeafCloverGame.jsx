@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useQuoteBag } from "./quotes";
 
 /**
  * 🍀 Four-Leaf Clover Hunt — fixed & responsive (Tailwind v3.4.17)
@@ -139,6 +140,13 @@ export default function FourLeafCloverGame() {
   const containerRef = useRef(null);
   const [boardH, setBoardH] = useState(360); // 최소 가드
 
+  const nextQuote = useQuoteBag();
+  const [line, setLine] = useState("");
+
+  useEffect(() => {
+    if (open) setLine(nextQuote()); // 모달 열릴 때 새 문구
+  }, [open, nextQuote]);
+
   useEffect(() => {
     function updateAnchor() {
       if (!boardRef.current) return;
@@ -220,6 +228,7 @@ export default function FourLeafCloverGame() {
   }, []);
 
   function start() {
+    setLine(nextQuote());
     setStatus("playing");
     setStartAt(Date.now());
     setElapsedMs(0);
@@ -330,6 +339,7 @@ export default function FourLeafCloverGame() {
         <ModalAt open={status === "success"} anchor={anchor}>
           <div id="clover-modal-card" className="relative isolate opacity-100" style={{ width: "min(92vw, 380px)", padding: 20, textAlign: "center" }}>
             <div className="text-emerald-700 text-xs mb-2">기록</div>
+            <div className="text-emerald-700 font-bold text-base mb-2">{line}</div>
             <div className="text-emerald-800 font-extrabold text-2xl sm:text-3xl my-2">{ms(elapsedMs)}</div>
             <div className="flex justify-center gap-2 sm:gap-3 mt-2">
               <Button color="emerald" variant="solid" className="min-h-10 px-4 text-sm" onClick={start}>다시 도전</Button>
