@@ -123,6 +123,10 @@ export default function FourLeafCloverGame() {
   try { threeUrl = new URL("./assets/three_leaf_clover.webp", import.meta.url).href; } catch { threeUrl = "/three_leaf_clover.webp"; }
   try { fourUrl = new URL("./assets/four_leaf_clover.webp", import.meta.url).href; } catch { fourUrl = "/four_leaf_clover.webp"; }
 
+  // ▶ 시작 모달/시작 여부
+  const [isStarted, setIsStarted] = useState(false);
+  const [showStartModal, setShowStartModal] = useState(false);
+
   const [difficulty, setDifficulty] = useState("normal");
   const [count, setCount] = useState(CONFIG.amount.normal);
   const [items, setItems] = useState([]);
@@ -143,9 +147,18 @@ export default function FourLeafCloverGame() {
   const nextQuote = useQuoteBag();
   const [line, setLine] = useState("");
 
+  // ▶ 진입 시 시작 모달 열기 + 스크롤 잠금
   useEffect(() => {
-    if (open) setLine(nextQuote()); // 모달 열릴 때 새 문구
-  }, [open, nextQuote]);
+    setShowStartModal(true);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  // 모달 열릴 때마다 새 문구 세팅
+  useEffect(() => {
+    if (showStartModal) setLine(nextQuote());
+  }, [showStartModal, nextQuote]);
 
   useEffect(() => {
     function updateAnchor() {
@@ -200,9 +213,11 @@ export default function FourLeafCloverGame() {
     setItems(next);
   }, [rect.width, rect.height, round, count]);
 
+  // ▶ 자동 시작을 막고, 사용자가 '게임 시작'을 누른 뒤에만 start() 허용
   useEffect(() => {
+    if (!isStarted) return;
     if (status === "idle" && rect.width > 0 && rect.height > 0) start();
-  }, [rect.width, rect.height]);
+  }, [rect.width, rect.height, isStarted, status]);
 
   useEffect(() => {
     function fitBoard() {
@@ -227,6 +242,12 @@ export default function FourLeafCloverGame() {
     };
   }, []);
 
+  function handleStart() {
+    setIsStarted(true);
+    setShowStartModal(false);
+    start();
+  }
+
   function start() {
     setLine(nextQuote());
     setStatus("playing");
@@ -236,6 +257,10 @@ export default function FourLeafCloverGame() {
   }
   function reshuffle() { setRound((r) => r + 1); }
   const ms = (n = 0) => (n / 1000).toFixed(2) + "s";
+
+  const openStartModal = () => {
+    setShowStartModal(true);
+  };
 
   function clickClover(it) {
     if (status === "idle") start();
@@ -252,13 +277,35 @@ export default function FourLeafCloverGame() {
 
   return (
     <div className="min-h-dvh w-full flex items-start justify-center bg-gradient-to-b from-white to-emerald-50 overflow-hidden">
-      <div ref={containerRef} className="w-full max-w-[120rem] mx-auto flex flex-col gap-3 flex-1 min-h-0 px-3 sm:px-4 md:px-6 py-3 sm:pt-4 md:pt-6">
+      <div
+        ref={containerRef}
+        className="w-full max-w-[120rem] mx-auto flex flex-col gap-3 flex-1 min-h-0 px-3 sm:px-4 md:px-6 py-3 sm:pt-4 md:pt-6"
+      >
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100/70 bg-white/85 backdrop-saturate-[1.3] backdrop-blur-md shadow p-3 sm:p-4">
-          <h1 className="m-0 flex items-center gap-2 text-emerald-900 font-extrabold text-base sm:text-xl tracking-tight">🍀 네잎클로버 찾기</h1>
+          <h1 className="m-0 flex items-center gap-2 text-emerald-900 font-extrabold text-base sm:text-xl tracking-tight">
+            🍀 네잎클로버 찾기
+          </h1>
           <div className="flex items-center gap-2">
-            <Button color="emerald" variant="solid" size="xs" className="h-8 px-3 text-xs whitespace-nowrap" onClick={start}>새 게임</Button>
-            <Button color="slate" variant="outline" size="xs" className="h-8 px-3 text-xs whitespace-nowrap" onClick={reshuffle}>재배치</Button>
+            {/* 🔴 기존 onClick={start} → 모달만 띄우도록 변경 */}
+            <Button
+              color="emerald"
+              variant="solid"
+              size="xs"
+              className="h-8 px-3 text-xs whitespace-nowrap"
+              onClick={openStartModal}
+            >
+              새 게임
+            </Button>
+            <Button
+              color="slate"
+              variant="outline"
+              size="xs"
+              className="h-8 px-3 text-xs whitespace-nowrap"
+              onClick={reshuffle}
+            >
+              재배치
+            </Button>
           </div>
         </div>
 
@@ -277,24 +324,32 @@ export default function FourLeafCloverGame() {
           </select>
         </div>
 
-        {/* Stats */} 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3" role="group" aria-label="게임 통계" > 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 sm:p-4"> 
-            <div className="text-[11px] sm:text-xs text-emerald-900/80">상태</div> 
-            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums text-right">{status === "playing" ? "진행중" : status === "success" ? "성공" : "대기"}</div> 
-          </div> 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 sm:p-4"> 
-            <div className="text-[11px] sm:text-xs text-emerald-900/80">경과</div> 
-            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums text-right">{ms(elapsedMs)}</div> 
-          </div> 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 sm:p-4"> 
-            <div className="text-[11px] sm:text-xs text-emerald-900/80">시도</div> 
-            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums text-right">{round}</div> 
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3" role="group" aria-label="게임 통계">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 sm:p-4">
+            <div className="text-[11px] sm:text-xs text-emerald-900/80">상태</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums text-right">
+              {status === "playing" ? "진행중" : status === "success" ? "성공" : "대기"}
+            </div>
           </div>
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 sm:p-4"> 
-            <div className="text-[11px] sm:text-xs text-emerald-900/80">최고</div> 
-            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums text-right">{bestMs == null ? "-" : ms(bestMs)}</div>
-          </div> 
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 sm:p-4">
+            <div className="text-[11px] sm:text-xs text-emerald-900/80">경과</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums text-right">
+              {ms(elapsedMs)}
+            </div>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 sm:p-4">
+            <div className="text-[11px] sm:text-xs text-emerald-900/80">시도</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums text-right">
+              {round}
+            </div>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-3 sm:p-4">
+            <div className="text-[11px] sm:text-xs text-emerald-900/80">최고</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums text-right">
+              {bestMs == null ? "-" : ms(bestMs)}
+            </div>
+          </div>
         </div>
 
         {/* Board */}
@@ -303,8 +358,15 @@ export default function FourLeafCloverGame() {
             ref={boardRef}
             role="application"
             aria-label="네잎클로버 보드"
-            className="relative w-full h-full min-h-[320px] overflow-hidden select-none border border-emerald-900/40 shadow-[inset_0_2px_10px_rgba(0,0,0,0.35),_0_8px_16px_rgba(0,0,0,0.12)]"
-            style={{ backgroundImage: `url(${grassUrl})`, backgroundSize: "cover", backgroundPosition: "center", height: boardH }}
+            className={`relative w-full h-full min-h-[320px] overflow-hidden select-none border border-emerald-900/40 shadow-[inset_0_2px_10px_rgba(0,0,0,0.35),_0_8px_16px_rgba(0,0,0,0.12)] ${
+              isStarted ? "pointer-events-auto blur-0" : "pointer-events-none blur-[2px]"
+            }`}
+            style={{
+              backgroundImage: `url(${grassUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              height: boardH,
+            }}
           >
             <div
               key={shakeKey}
@@ -335,15 +397,72 @@ export default function FourLeafCloverGame() {
             ))}
           </div>
         </div>
-        {/* Success Modal (board center) */}
-        <ModalAt open={status === "success"} anchor={anchor}>
+
+        {/* Success Modal (board center 느낌으로 중앙) */}
+        <ModalAt open={status === "success"}>
           <div id="clover-modal-card" className="relative isolate opacity-100" style={{ width: "min(92vw, 380px)", padding: 20, textAlign: "center" }}>
+            {/* 닫기(X) */}
+            <button
+              className="absolute right-3 top-3 rounded-full px-2 py-1 text-slate-500 hover:bg-slate-100"
+              aria-label="닫기"
+              onClick={() => setStatus("idle")}
+            >
+              ×
+            </button>
+
             <div className="text-emerald-700 text-xs mb-2">기록</div>
             <div className="text-emerald-700 font-bold text-base mb-2">{line}</div>
             <div className="text-emerald-800 font-extrabold text-2xl sm:text-3xl my-2">{ms(elapsedMs)}</div>
             <div className="flex justify-center gap-2 sm:gap-3 mt-2">
-              <Button color="emerald" variant="solid" className="min-h-10 px-4 text-sm" onClick={start}>다시 도전</Button>
-              <Button color="slate" variant="soft" className="min-h-10 px-4 text-sm" onClick={() => setStatus("idle")}>닫기</Button>
+              <Button color="emerald" variant="solid" className="min-h-10 px-4 text-sm" onClick={start}>
+                다시 도전
+              </Button>
+              <Button color="slate" variant="soft" className="min-h-10 px-4 text-sm" onClick={() => setStatus("idle")}>
+                닫기
+              </Button>
+            </div>
+          </div>
+        </ModalAt>
+
+        {/* Start Modal (처음 진입/새 게임) */}
+        <ModalAt open={showStartModal}>
+          {/* 카드 */}
+          <div className="relative bg-white rounded-xl" id="clover-start-modal">
+            <div className="px-5 py-7">
+              <h2 className="text-2xl font-bold text-emerald-700 mb-5">🍀 네잎클로버 찾기</h2>
+              <p className="mt-2 text-slate-600">제한시간 안에 네잎클로버를 최대한 빨리 찾아보세요!</p>
+
+              {/* 난이도 (선택사항: 토글 버튼) */}
+              <div className="mt-4">
+                <label className="block text-sm text-slate-500 mb-1">난이도</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {["easy", "normal", "hard", "insane"].map((lv) => (
+                    <Button
+                      key={lv}
+                      size="xs"
+                      color={difficulty === lv ? "emerald" : "slate"}
+                      variant={difficulty === lv ? "soft" : "outline"}
+                      onClick={() => setDifficulty(lv)}
+                    >
+                      {lv}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-2">
+                <Button
+                  color="emerald"
+                  variant="solid"
+                  className="min-h-10 px-4 text-sm flex-1"
+                  onClick={handleStart}
+                >
+                  게임 시작
+                </Button>
+                <Button color="slate" variant="soft" className="min-h-10 px-4 text-sm flex-1" onClick={() => setShowStartModal(false)}>
+                  취소
+                </Button>
+              </div>
             </div>
           </div>
         </ModalAt>
@@ -354,7 +473,7 @@ export default function FourLeafCloverGame() {
 
           .btn{ border-radius:12px; padding:8px 12px; font-weight:700; cursor:pointer; transition:transform .12s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border .2s ease; border:1px solid transparent; user-select:none; }
           .btn:active{ transform:scale(.96); }
-          .btn[data-size="xs"]{ padding:4px 10px; font-size:12px; line-height:1; border-radius:10px; }
+          .btn[data-size="xs"]{ padding:6px 12px; font-size:12px; line-height:1; border-radius:10px; }
 
           /* solid */
           .btn[data-variant="solid"][data-color="emerald"]{ background:#059669; color:#fff; box-shadow:0 2px 6px rgba(5,150,105,.24); }
