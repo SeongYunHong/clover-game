@@ -78,13 +78,12 @@ function LightHalo({ w }) {
 }
 
 // ---------- Buttons ----------
-function Button({ children, onClick, color = "emerald", variant = "solid", size = "xs", className = "" }) {
+function Button({ children, onClick, color = "emerald", variant = "solid", className = "" }) {
   return (
     <button
       onClick={onClick}
       data-color={color}
       data-variant={variant}
-      data-size={size}
       className={`btn ${className}`}
     >
       {children}
@@ -287,8 +286,7 @@ export default function FourLeafCloverGame() {
             <Button
               color="emerald"
               variant="solid"
-              size="xs"
-              className="h-8 px-3 text-xs whitespace-nowrap"
+              className="px-3 py-1.5 text-xs rounded-xl h-8 text-xs whitespace-nowrap"
               onClick={openStartModal}
             >
               새 게임
@@ -404,7 +402,7 @@ export default function FourLeafCloverGame() {
               <Button color="emerald" variant="solid" className="min-h-10 px-4 text-sm" onClick={start}>
                 다시 도전
               </Button>
-              <Button color="slate" variant="soft" className="min-h-10 px-4 text-sm" onClick={() => setStatus("idle")}>
+              <Button color="slate" variant="soft" className="min-h-10 px-4 text-sm" onClick={() => setStatus("idle1")}>
                 닫기
               </Button>
             </div>
@@ -416,17 +414,17 @@ export default function FourLeafCloverGame() {
           {/* 카드 */}
           <div className="relative bg-white rounded-xl" id="clover-start-modal">
             <div className="px-5 py-7">
-              <h2 className="text-2xl font-bold text-emerald-700 mb-5">🍀 네잎클로버 찾기</h2>
-              <p className="mt-2 text-slate-600">제한시간 안에 네잎클로버를 최대한 빨리 찾아보세요!</p>
+              <h2 className="text-base lg:text-2xl font-bold text-emerald-700 mb-5">🍀 네잎클로버 찾기</h2>
+              <p className="mt-2 text-[11px] lg:text-base text-slate-600">제한시간 안에 네잎클로버를 최대한 빨리 찾아보세요!</p>
 
               {/* 난이도 (선택사항: 토글 버튼) */}
               <div className="mt-4">
                 <label className="block text-sm text-slate-500 mb-1">난이도</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {["easy", "normal", "hard", "insane"].map((lv) => (
+                <div className="flex justify-between lg:justify-center lg:gap-12">
+                  {["1", "2", "3", "4"].map((lv) => (
                     <Button
+                      className="px-3 py-1.5 text-xs rounded-xl"
                       key={lv}
-                      size="xs"
                       color={difficulty === lv ? "emerald" : "slate"}
                       variant={difficulty === lv ? "soft" : "outline"}
                       onClick={() => setDifficulty(lv)}
@@ -441,12 +439,12 @@ export default function FourLeafCloverGame() {
                 <Button
                   color="emerald"
                   variant="solid"
-                  className="min-h-10 px-4 text-sm flex-1"
+                  className="px-4 py-1.5 rounded-xl min-h-10 text-[10px] lg:text-sm flex-1"
                   onClick={handleStart}
                 >
                   게임 시작
                 </Button>
-                <Button color="slate" variant="soft" className="min-h-10 px-4 text-sm flex-1" onClick={() => setShowStartModal(false)}>
+                <Button color="slate" variant="soft" className="px-4 py-1.5 rounded-xl min-h-10 text-[10px] lg:text-sm flex-1" onClick={() => setShowStartModal(false)}>
                   취소
                 </Button>
               </div>
@@ -460,7 +458,6 @@ export default function FourLeafCloverGame() {
 
           .btn{ border-radius:12px; padding:8px 12px; font-weight:700; cursor:pointer; transition:transform .12s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border .2s ease; border:1px solid transparent; user-select:none; }
           .btn:active{ transform:scale(.96); }
-          .btn[data-size="xs"]{ padding:6px 12px; font-size:12px; line-height:1; border-radius:10px; }
 
           /* solid */
           .btn[data-variant="solid"][data-color="emerald"]{ background:#059669; color:#fff; box-shadow:0 2px 6px rgba(5,150,105,.24); }
