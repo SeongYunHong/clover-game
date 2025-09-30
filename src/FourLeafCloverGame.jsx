@@ -250,7 +250,7 @@ export default function FourLeafCloverGame() {
     setElapsedMs(0);
     setRound((r) => r + 1);
   }
-  function reshuffle() { setRound((r) => r + 1); }
+
   const ms = (n = 0) => (n / 1000).toFixed(2) + "s";
 
   const openStartModal = () => {
@@ -290,15 +290,6 @@ export default function FourLeafCloverGame() {
               onClick={openStartModal}
             >
               새 게임
-            </Button>
-            <Button
-              color="slate"
-              variant="outline"
-              size="xs"
-              className="h-8 px-3 text-xs whitespace-nowrap"
-              onClick={reshuffle}
-            >
-              재배치
             </Button>
           </div>
         </div>
