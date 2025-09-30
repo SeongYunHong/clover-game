@@ -397,15 +397,6 @@ export default function FourLeafCloverGame() {
         {/* Success Modal (board center 느낌으로 중앙) */}
         <ModalAt open={status === "success"}>
           <div id="clover-modal-card" className="relative isolate opacity-100" style={{ width: "min(92vw, 380px)", padding: 20, textAlign: "center" }}>
-            {/* 닫기(X) */}
-            <button
-              className="absolute right-3 top-3 rounded-full px-2 py-1 text-slate-500 hover:bg-slate-100"
-              aria-label="닫기"
-              onClick={() => setStatus("idle")}
-            >
-              ×
-            </button>
-
             <div className="text-emerald-700 text-xs mb-2">기록</div>
             <div className="text-emerald-700 font-bold text-base mb-2">{line}</div>
             <div className="text-emerald-800 font-extrabold text-2xl sm:text-3xl my-2">{ms(elapsedMs)}</div>
