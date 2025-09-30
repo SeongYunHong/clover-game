@@ -123,7 +123,7 @@ export default function FourLeafCloverGame() {
   const [isStarted, setIsStarted] = useState(false);
   const [showStartModal, setShowStartModal] = useState(false);
 
-  const [difficulty, setDifficulty] = useState("normal");
+  const [difficulty, setDifficulty] = useState("2");
   const [count, setCount] = useState(CONFIG.amount.normal);
   const [items, setItems] = useState([]);
   const [targetId, setTargetId] = useState(null);
@@ -313,10 +313,10 @@ export default function FourLeafCloverGame() {
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
           >
-            <option value="easy">쉬움</option>
-            <option value="normal">보통</option>
-            <option value="hard">어려움</option>
-            <option value="insane">극악</option>
+            <option value="1">쉬움</option>
+            <option value="2">보통</option>
+            <option value="3">어려움</option>
+            <option value="4">극악</option>
           </select>
         </div>
 
