@@ -4,10 +4,6 @@ import { useQuoteBag } from "./quotes";
 
 /**
  * 🍀 Four-Leaf Clover Hunt — fixed & responsive (Tailwind v3.4.17)
- * - Fix: responsive size now uses board width (no window dependency in hot paths)
- * - Fix: buttons wired (start / reshuffle) and compact on one row
- * - Added small button styling token (data-size="xs")
- * - Kept clean, self-contained CSS for .btn theme
  */
 
 // ---------- Config ----------
